@@ -1,4 +1,7 @@
 node_modules
+<<<<<<< HEAD
 .env
 .env.local
+=======
+>>>>>>> 08e5b7306362a3c87f8eec29e90cacd632dc0202
 dist/*

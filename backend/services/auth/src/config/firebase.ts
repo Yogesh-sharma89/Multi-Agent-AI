@@ -7,6 +7,6 @@ const firebaseAdmin = getApps().length > 0 ? getApps()[0] :
         credential: cert(serviceAccount as ServiceAccount)
     })
     
-const firebaseAuth = getAuth(firebaseAdmin);
+const firebaseAdminAuth = getAuth(firebaseAdmin);
 
-export default firebaseAuth;
+export default firebaseAdminAuth;

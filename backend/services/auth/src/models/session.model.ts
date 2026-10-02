@@ -7,7 +7,6 @@ const userDeviceSchema = new Schema(
         os: { type: String, default: "" },
         browser: { type: String, default: "" },
         browserVersion: { type: String, default: "" },
-        platform: { type: String, default: "" },
         engine: { type: String, default: "" },
         engineVersion: { type: String, default: "" },
         deviceType: {
@@ -17,17 +16,6 @@ const userDeviceSchema = new Schema(
         },
         vendor: { type: String, default: "" },
         model: { type: String, default: "" },
-    },
-    { _id: false }
-);
-
-const locationSchema = new Schema(
-    {
-        country: { type: String, default: "" },
-        region: { type: String, default: "" },
-        city: { type: String, default: "" },
-        latitude: { type: Number, default: null },
-        longitude: { type: Number, default: null },
     },
     { _id: false }
 );
@@ -51,10 +39,6 @@ const sessionSchema = new Schema<ISession>(
         },
         userDevice: {
             type: userDeviceSchema,
-            default: {},
-        },
-        location: {
-            type: locationSchema,
             default: {},
         },
         isRevoked: {

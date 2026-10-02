@@ -45,12 +45,7 @@ const userSchema = new Schema<IUser>(
         },
         provider: {
             type: String,
-            enum: ["local", "google", "github"],
             default: "local",
-        },
-        lastLoginAt: {
-            type: Date,
-            default: null,
         },
     },
     {

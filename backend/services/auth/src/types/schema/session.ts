@@ -12,20 +12,13 @@ export interface IUserDevice {
     model?: string;
 }
 
-export interface ILocationInfo {
-    country?: string;
-    region?: string;
-    city?: string;
-    latitude?: number;
-    longitude?: number;
-}
+
 
 export interface ISession extends Document {
     userId: Types.ObjectId;
     refreshTokenHash: string;
     ipAddress?: string;
     userDevice?: IUserDevice;
-    location?: ILocationInfo;
     isRevoked: boolean;
     revokedAt?: Date | null;
     expiresAt: Date;

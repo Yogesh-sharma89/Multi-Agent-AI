@@ -1,17 +1,18 @@
 import { signInWithPopup } from "firebase/auth";
-import { FcGoogle } from "react-icons/fc";
-import { auth, googleProvider } from "../../service/firebase.service";
+
+import { auth, githubProvider } from "../../service/firebase.service";
 import { useState } from "react";
 import { TbLoader4 } from "react-icons/tb";
+ import { FaGithub } from "react-icons/fa";
 
-const GoogleButton = () => {
+const GithubButton = () => {
 
   const [loading, setLoading] = useState(false);
 
-  const handleGoogleAuth = async () => {
+  const handleGithubAuth = async () => {
     setLoading(true);
     try {
-      const data = await signInWithPopup(auth, googleProvider);
+      const data = await signInWithPopup(auth, githubProvider);
       console.log(data);
     } catch (err) {
       console.log("Error in google auth :",err)
@@ -23,7 +24,7 @@ const GoogleButton = () => {
   return (
     <button
       type="button"
-      onClick={handleGoogleAuth}
+      onClick={handleGithubAuth}
       disabled={loading}
       aria-label="google"
       className="flex disabled:cursor-not-allowed cursor-pointer hover:bg-zinc-800/90 transition-all duration-100 bg-zinc-800 items-center text-white gap-2 rounded-lg p-3"
@@ -36,12 +37,12 @@ const GoogleButton = () => {
         </>
         :
         <>
-        <FcGoogle className="size-6"/>
-        <span>Continue with google</span>
+        <FaGithub className="size-6"/>
+        <span>Continue with github</span>
         </>
       }
     </button>
   );
 };
 
-export default GoogleButton;
+export default GithubButton;

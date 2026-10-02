@@ -9,8 +9,7 @@ export interface IUser extends Document {
     phone?: string;
     isEmailVerified: boolean;
     isActive: boolean;
-    provider: "local"  | "google" | "github";
-    lastLoginAt?: Date | null;
+    provider: string
     createdAt: Date;
     updatedAt: Date;
 }

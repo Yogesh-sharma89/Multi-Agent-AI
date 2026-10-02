@@ -15,12 +15,13 @@
     "start": "node dist/server.js"
   },
   "dependencies": {
+    "@backend/shared": "*",
     "dotenv": "^18.0.4",
     "express": "^5.2.1",
     "firebase-admin": "^14.5.0",
     "mongoose": "^9.10.3",
     "morgan": "^1.12.1",
-    "@backend/shared":"*"
+    "ua-parser-js": "^2.0.10"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",

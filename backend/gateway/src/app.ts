@@ -11,7 +11,10 @@ app.use(expres.json());
 
 app.use(expres.urlencoded({extended:true}))
 
-app.use(cors());
+app.use(cors({
+    origin:["http://localhost:5173"],
+    credentials:true
+}));
 
 //Auth service proxy
 app.use("/api/auth",proxy(EnvConfig.authService!,{

@@ -3,16 +3,20 @@ import { FcGoogle } from "react-icons/fc";
 import { auth, googleProvider } from "../../service/firebase.service";
 import { useState } from "react";
 import { TbLoader4 } from "react-icons/tb";
+import { useAuthMutation } from "../../module/auth/hooks/server/useAuth";
 
 const GoogleButton = () => {
 
   const [loading, setLoading] = useState(false);
 
+  const {mutateAsync:authMutation} = useAuthMutation();
+
   const handleGoogleAuth = async () => {
     setLoading(true);
     try {
       const data = await signInWithPopup(auth, googleProvider);
-      console.log(data);
+      const tokenId = await data.user.getIdToken()
+      await authMutation({tokenId});
     } catch (err) {
       console.log("Error in google auth :",err)
     }finally{

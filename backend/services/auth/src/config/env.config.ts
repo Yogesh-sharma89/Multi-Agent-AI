@@ -9,7 +9,8 @@ const EnvConfig = {
     token:{
         access:process.env.ACCESS_TOKEN_SCRET,
         refresh:process.env.REFRESH_TOKEN_TOKEN
-    }
+    },
+    redisUrl:process.env.REDIS_URL
 }
 
 export default EnvConfig;

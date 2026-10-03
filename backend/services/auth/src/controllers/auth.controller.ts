@@ -6,6 +6,7 @@ import SessionModel from "../models/session.model.js";
 import getDeviceInfo from "../utils/getDeviceInfo.js";
 import { GenerateAccessToken, GenerateRefreshToken, HashToken } from "../utils/token.js";
 import EnvConfig from "../config/env.config.js";
+import {redisClient} from "@backend/shared"
 
 export const firebaseAuth = asyncHandler(async (req, res) => {
 
@@ -74,16 +75,27 @@ export const firebaseAuth = asyncHandler(async (req, res) => {
 
     const REFRESH_TOKEN_EXPIRY = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-    await SessionModel.create({
+    const cacheKey = `session:${sessionId}`;
 
-        _id: sessionId,
-        userId: user._id,
-        refreshTokenHash,
-        ipAddress: req.ip || "",
-        userDevice,
-        expiresAt: REFRESH_TOKEN_EXPIRY,
-        lastUsedAt: new Date()
-    });
+    //Paralley create session and save in redis
+
+     await Promise.all([
+
+        SessionModel.create({
+
+            _id: sessionId,
+            userId: user._id,
+            refreshTokenHash,
+            ipAddress: req.ip || "",
+            userDevice,
+            expiresAt: REFRESH_TOKEN_EXPIRY,
+            lastUsedAt: new Date()
+        })
+        ,
+        redisClient.set(cacheKey, JSON.stringify({ userId: user._id, sessionId }), "EX", 7 * 24 * 60 * 60),
+
+    ])
+
 
     //now create access token and save into cookies 
 
@@ -117,3 +129,73 @@ export const firebaseAuth = asyncHandler(async (req, res) => {
         }
     })
 });
+
+export const GetCurrentUser = asyncHandler(async (req, res) => {
+
+    const currentUser = req.user;
+
+    const user = await UserModel.findById(currentUser.userId).lean();
+
+    return res.status(200).json({
+        success: true,
+        message: "User fetched successfully",
+        data: {
+            user: {
+                id: user?._id,
+                fullname: user?.fullName,
+                email: user?.email,
+                profileUrl: user?.profileUrl
+            }
+        }
+    })
+
+})
+
+export const Logout = asyncHandler(async (req, res) => {
+
+    const currentUser = req.user;
+
+    //find user session on this device
+    const session = await SessionModel.findById(currentUser.sessionId);
+
+    if (session) {
+
+        //Only then delete the session 
+        await SessionModel.findByIdAndDelete(session._id)
+    }
+
+    //invalidate redis cache 
+
+    await redisClient.del(`session:${currentUser.sessionId}`)
+
+    //Session exists or not let the user logout on both situation
+
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+
+    return res.status(200).json({
+        success: true,
+        message: "User logout successfully"
+    })
+})
+
+export const LogoutOnAllDevices = asyncHandler(async (req, res) => {
+
+    const currentUser = req.user;
+
+    await SessionModel.deleteMany({
+        userId: currentUser.userId
+    })
+
+    await redisClient.del(`session:${currentUser.sessionId}`)
+
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken")
+
+
+    return res.status(200).json({
+        success: true,
+        message: "User session deleted from all devices"
+    })
+
+})

@@ -9,6 +9,6 @@ const QueryProvider = ({children}:{children:ReactNode})=>{
             {children}
         </QueryClientProvider>
     )
-}\
+}
 
 export default QueryProvider;

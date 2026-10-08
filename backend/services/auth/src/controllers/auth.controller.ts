@@ -33,31 +33,28 @@ export const firebaseAuth = asyncHandler(async (req, res) => {
         email: decoded.email,
     });
 
-    if (user) {
-        throw new AppError("User already exists with this email", 400);
+    const isExistingUser = Boolean(user);
+
+    if (!user) {
+        const firebaseUser = await firebaseAdminAuth.getUser(decoded.uid);
+
+        if (!firebaseUser) {
+            throw new AppError("Failed to fetch your info", 500);
+        }
+
+        user = await UserModel.create({
+            fullName: firebaseUser.displayName ?? "User",
+            email: firebaseUser.email ?? decoded.email,
+            isEmailVerified: firebaseUser.emailVerified,
+            profileUrl: firebaseUser.photoURL ?? "",
+            firebaseId: firebaseUser.uid,
+            phone: firebaseUser.phoneNumber ?? "",
+            isActive: true,
+            provider: firebaseUser.providerData[0]?.providerId ?? "firebase",
+        });
     }
 
-    const firebaseUser = await firebaseAdminAuth.getUser(decoded.uid);
-
-    if (!firebaseUser) {
-        throw new AppError("Failed to fetch your info", 500);
-    }
-
-    user = await UserModel.create({
-        fullName: firebaseUser.displayName ?? "User",
-        email: firebaseUser.email ?? decoded.email,
-        isEmailVerified: firebaseUser.emailVerified,
-        profileUrl: firebaseUser.photoURL ?? "",
-        firebaseId: firebaseUser.uid,
-        phone: firebaseUser.phoneNumber ?? "",
-        isActive: true,
-        provider: firebaseUser.providerData[0]?.providerId ?? "firebase",
-    });
-
-
-
-    //now user is created 
-    //Create user session
+    // Create a fresh session for both new and returning users.
 
     const sessionId = new Types.ObjectId();
 
@@ -116,9 +113,9 @@ export const firebaseAuth = asyncHandler(async (req, res) => {
         ...cookieOptions, maxAge: 7 * 24 * 60 * 60 * 1000
     })
 
-    return res.status(201).json({
+    return res.status(isExistingUser ? 200 : 201).json({
         success: true,
-        message: "User account created successfully",
+        message: isExistingUser ? "User logged in successfully" : "User account created successfully",
         data: {
             user: {
                 id: user._id,

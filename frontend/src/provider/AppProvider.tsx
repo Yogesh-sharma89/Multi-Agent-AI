@@ -1,4 +1,5 @@
 
+import Toaster from "../components/toaster"
 import AppRoutes from "../routes/AppRoutes"
 
 
@@ -6,7 +7,7 @@ import AppRoutes from "../routes/AppRoutes"
 const AppProvider = () => {
   return (
     <>
-      
+      <Toaster/>
       <AppRoutes/>
     </>
   )

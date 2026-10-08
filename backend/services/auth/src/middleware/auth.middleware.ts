@@ -4,7 +4,7 @@ import {redisClient} from "@backend/shared"
 
 const AuthMiddleware = asyncHandler(async(req,_res,next)=>{
 
-    const accessToken = req.cookies.accessToken;
+    const accessToken = req.cookies?.accessToken;
 
     if(!accessToken || !accessToken.trim() || typeof accessToken!=="string"){
         throw new AppError("Invalid access token",401);

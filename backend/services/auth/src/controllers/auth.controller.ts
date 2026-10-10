@@ -4,9 +4,9 @@ import UserModel from "../models/user.model.js";
 import { Types } from "mongoose";
 import SessionModel from "../models/session.model.js";
 import getDeviceInfo from "../utils/getDeviceInfo.js";
-import { GenerateAccessToken, GenerateRefreshToken, HashToken } from "../utils/token.js";
+import { GenerateAccessToken, GenerateRefreshToken, HashToken, VerifyRefreshToken } from "../utils/token.js";
 import EnvConfig from "../config/env.config.js";
-import {redisClient} from "@backend/shared"
+import { redisClient } from "@backend/shared"
 
 export const firebaseAuth = asyncHandler(async (req, res) => {
 
@@ -76,7 +76,7 @@ export const firebaseAuth = asyncHandler(async (req, res) => {
 
     //Paralley create session and save in redis
 
-     await Promise.all([
+    await Promise.all([
 
         SessionModel.create({
 
@@ -194,5 +194,84 @@ export const LogoutOnAllDevices = asyncHandler(async (req, res) => {
         success: true,
         message: "User session deleted from all devices"
     })
+
+})
+
+
+export const refreshSession = asyncHandler(async (req, res) => {
+
+    const refreshToken = req.cookies.refreshToken;
+
+    if (typeof refreshToken !== "string" || !refreshToken.trim()) {
+        throw new AppError("Invalid refresh token", 400);
+    }
+
+    //now verify refresh token 
+
+    const decoded = VerifyRefreshToken(refreshToken.trim());
+
+    //check session for this token 
+    const session = await SessionModel.findById(decoded.sessionId);
+
+    if (!session) {
+        //then tell the user clearly please log in 
+        throw new AppError("Your session doesn't exist . Please login", 401)
+    }
+
+    //compare the refresh token 
+    const refreshTokenHash = HashToken(refreshToken.trim());
+
+    if (refreshTokenHash !== session.refreshTokenHash) {
+        throw new AppError("Refresh token is malformed", 401);
+    }
+
+    //then check session expiry
+    if (session.expiresAt <= new Date()) {
+        //session has expired 
+        throw new AppError("expired session . Please login to continue", 401)
+    }
+
+    const newPayload = {
+        userId: session.userId.toString(),
+        email: decoded.email,
+        sessionId: session._id.toString(),
+    };
+
+    const newAccessToken = GenerateAccessToken(newPayload);
+    const newRefreshToken = GenerateRefreshToken(newPayload);
+    const newRefreshHash = HashToken(newRefreshToken);
+
+    session.refreshTokenHash = newRefreshHash;
+    session.expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    session.lastUsedAt = new Date();
+
+    await session.save();
+
+    await redisClient.set(
+        `session:${session._id}`,
+        JSON.stringify({ userId: session.userId, sessionId: session._id }),
+        "EX",
+        7 * 24 * 60 * 60
+    );
+
+    res.cookie("accessToken", newAccessToken, {
+        httpOnly: true,
+        secure: EnvConfig.environment === "production",
+        sameSite: "lax",
+        maxAge: 15 * 60 * 1000,
+    });
+
+
+    res.cookie("refreshToken", newRefreshToken, {
+        httpOnly: true,
+        secure: EnvConfig.environment === "production",
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+
+    return res.status(200).json({
+        success: true,
+        message: "Session refreshed successfully",
+    });
 
 })

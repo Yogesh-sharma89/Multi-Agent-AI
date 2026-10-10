@@ -1,16 +1,20 @@
 import { useLogout } from "../../module/auth/hooks/server/useAuth"
 import { AiOutlineLogout } from "react-icons/ai";
 import { TbLoader4 } from "react-icons/tb";
+import { useNavigate } from "react-router";
 import {toast} from 'sonner'
 
 const Logout = () => {
 
   const {mutateAsync:logoutMutation,isPending} = useLogout();
+
+  const navigate = useNavigate();
   
   const handleLogout = async()=>{
     try{
 
         await logoutMutation();
+        navigate("/",{replace:true})
         toast.success("Logout successfully")
 
     }catch(err:any){ 

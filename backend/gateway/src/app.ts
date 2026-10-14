@@ -2,6 +2,8 @@ import expres from "express";
 import cors from "cors";
 import proxy from "express-http-proxy";
 import EnvConfig from "./config/env.config.js";
+import { errorHandler } from "@backend/shared";
+import Authenticate from "./middleware/auth.middleware.js";
 
 const app = expres();
 
@@ -23,11 +25,33 @@ app.use("/api/auth",proxy(EnvConfig.authService!,{
     }
 }))
 
+//chat proxy 
+app.use("/api/chat",Authenticate,proxy(EnvConfig.chatService!,{
+    
+    proxyReqPathResolver:(req)=>{
+        return req.originalUrl;
+    },
+
+    proxyReqOptDecorator:(proxyReqOpts, srcReq)=>{
+
+        proxyReqOpts.headers = {
+            ...proxyReqOpts.headers,
+            "x-user-id":srcReq.user.userId,
+            "x-user-email":srcReq.user.email,
+            "x-session-id":srcReq.user.sessionId
+        }
+
+        return proxyReqOpts;
+    }
+}))
+
 app.get("/health",(_req,res)=>{
     res.json({
         success:true,
         message:"Gateway running properly"
     })
 })
+
+app.use(errorHandler);
 
 export default app;

@@ -93,7 +93,7 @@ export default function AuthPage() {
     const { email, password } = values;
 
     try {
-      await handleEmailAuth(email, password);
+      await handleEmailAuth(email, password,mode);
       resetForm();
     } catch (err) {
       console.log("Error in auth form submit :", err);

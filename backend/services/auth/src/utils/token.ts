@@ -16,7 +16,7 @@ export const GenerateAccessToken = (payload: MyJwtPayload) => {
     throw new AppError("Invalid token payload", 400);
   }
 
-  const token = jwt.sign(payload, EnvConfig.token.access!);
+  const token = jwt.sign(payload, EnvConfig.token.access!, { expiresIn: "15m" });
   return token;
 
 };

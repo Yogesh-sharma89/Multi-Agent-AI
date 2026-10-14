@@ -7,7 +7,7 @@ const EnvConfig = {
     dbUrl:process.env.DB_URL,
     environment:process.env.NODE_ENV,
     token:{
-        access:process.env.ACCESS_TOKEN_SCRET,
+        access:process.env.ACCESS_TOKEN_SECRET ?? process.env.ACCESS_TOKEN_SCRET,
         refresh:process.env.REFRESH_TOKEN_TOKEN
     },
     redisUrl:process.env.REDIS_URL

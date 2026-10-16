@@ -31,7 +31,7 @@ export const getAllConversations = asyncHandler(async (req, res) => {
         throw new AppError("Invalid user Id", 400);
     }
 
-    const allConversations = await ConversationModel.find({ userId }).lean();
+    const allConversations = await ConversationModel.find({ userId }).lean().sort({updatedAt:-1});
 
     return res.status(200).json({
         success: true,

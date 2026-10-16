@@ -6,6 +6,7 @@ const EnvConfig = {
     port : process.env.PORT || 5000,
     authService:process.env.AUTH_SERVICE,
     chatService:process.env.CHAT_SERVICE,
+    agentService:process.env.AGENT_SERVICE,
     accessTokenSecret: process.env.ACCESS_TOKEN_SECRET ?? process.env.ACCESS_TOKEN_SCRET,
 }
 

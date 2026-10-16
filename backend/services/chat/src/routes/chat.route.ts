@@ -5,6 +5,7 @@ import {
     getAllConversations,
     getConversationById,
 } from "../controllers/conversation.controller.js";
+import { createMessage } from "../controllers/message.controller.js";
 
 
 
@@ -20,7 +21,8 @@ chatRouter.delete("/:id",deleteConversation);
 
 //Message Routes
 
-chatRouter.post("/:id/message",createMessage)
+chatRouter.post("/:id/message",createMessage);
+
 
 
 
